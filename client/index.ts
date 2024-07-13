@@ -82,23 +82,23 @@ ws.on('message', function incoming(data: WebSocket.Data): void {
       const decryptedMessage = decryptMessage(parsedMessage.content);
       console.log('\n상대방: ' + decryptedMessage);
       promptUser();
+    } else if (parsedMessage.type === 'system') {
+      if (parsedMessage.message === 'ready') {
+        console.log('상대방이 연결되었습니다. 키 교환을 시작합니다.');
+        ws.send(JSON.stringify({ type: 'publicKey', key: publicKey }));
+        sentPublicKey = true;
+        console.log('공개키를 보냈습니다.');
+      } else if (parsedMessage.message === 'end') {
+        console.log('방 종료');
+        rl.close();
+        ws.close();
+        process.exit(0);
+      } else {
+        console.log('Room ID: ' + parsedMessage.message);
+      }
     }
   } catch (error) {
-    if (message === '[ready]') {
-      console.log('상대방이 연결되었습니다. 키 교환을 시작합니다.');
-      ws.send(JSON.stringify({ type: 'publicKey', key: publicKey }));
-      sentPublicKey = true;
-      console.log('공개키를 보냈습니다.');
-    } else if (message.startsWith('방 ID:')) {
-      console.log(message);
-    } else if (message === '[end]') {
-      console.log('방 종료');
-      rl.close();
-      ws.close();
-      process.exit(0);
-    } else {
-      console.log('처리되지 않은 메시지:', message);
-    }
+    console.log('처리되지 않은 메시지:', message);
   }
 });
 

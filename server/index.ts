@@ -25,7 +25,7 @@ const server = serve({
       if (!rooms.has(roomId)) {
         rooms.set(roomId, new Set());
         console.log(`새로운 방 생성: ${roomId}`);
-        ws.send(`방 ID: ${roomId}`);
+        ws.send(JSON.stringify({ type: 'system', message: roomId }));
       } else if (rooms.get(roomId).size >= 2) {
         console.log(`${roomId} 방은 이미 가득 찼습니다.`);
         ws.close();
@@ -39,7 +39,7 @@ const server = serve({
 
       if (rooms.get(roomId).size === 2) {
         const [firstClient, secondClient] = rooms.get(roomId);
-        firstClient.send('[ready]');
+        firstClient.send(JSON.stringify({ type: 'system', message: 'ready' }));
       }
     },
     message(ws, message) {
@@ -65,7 +65,7 @@ const server = serve({
           console.log(`방 ${roomId} 삭제됨`);
         } else {
           for (const client of rooms.get(roomId)) {
-            client.send('[end]');
+            client.send(JSON.stringify({ type: 'system', message: 'end' }));
           }
         }
       }
