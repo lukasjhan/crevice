@@ -26,7 +26,7 @@ function encryptMessage(message: string): string {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(
     'aes-256-gcm',
-    sharedKey.slice(0, 32),
+    sharedKey.subarray(0, 32),
     iv
   );
   let encrypted = cipher.update(message, 'utf8', 'base64');
