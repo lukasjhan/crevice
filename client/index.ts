@@ -1,5 +1,6 @@
 import WebSocket from 'ws';
 import crypto from 'crypto';
+import readline from 'readline';
 
 const baseUrl: string = 'ws://localhost:5000';
 
@@ -8,12 +9,10 @@ const url: string = roomId ? `${baseUrl}?roomId=${roomId}` : baseUrl;
 
 const ws: WebSocket = new WebSocket(url);
 
-let messageIndex: number = 0;
-const messages: string[] = [
-  '안녕하세요!',
-  '오늘 날씨가 좋네요.',
-  '즐거운 하루 되세요!',
-];
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
 const ecdh = crypto.createECDH('prime256v1');
 const publicKey = ecdh.generateKeys('base64', 'compressed');
@@ -76,13 +75,13 @@ ws.on('message', function incoming(data: WebSocket.Data): void {
         console.log('공개키를 보냈습니다.');
       }
       if (isKeyExchangeComplete()) {
-        console.log('키 교환이 완료되었습니다. 메시지 전송을 시작합니다.');
-        sendNextMessage();
+        console.log('키 교환이 완료되었습니다. 메시지를 입력해주세요:');
+        promptUser();
       }
     } else if (parsedMessage.type === 'encryptedMessage') {
       const decryptedMessage = decryptMessage(parsedMessage.content);
-      console.log('상대방:', decryptedMessage);
-      sendNextMessage();
+      console.log('\n상대방: ' + decryptedMessage);
+      promptUser();
     }
   } catch (error) {
     if (message === '[ready]') {
@@ -100,22 +99,30 @@ ws.on('message', function incoming(data: WebSocket.Data): void {
 
 ws.on('close', function close(): void {
   console.log('서버와의 연결이 종료되었습니다.');
+  rl.close();
 });
 
 ws.on('error', function error(err: Error): void {
   console.error('WebSocket 오류 발생:', err);
+  rl.close();
 });
 
-function sendNextMessage(): void {
-  if (isKeyExchangeComplete() && messageIndex < messages.length) {
-    const message = messages[messageIndex];
-    const encryptedMessage = encryptMessage(message);
-    ws.send(
-      JSON.stringify({ type: 'encryptedMessage', content: encryptedMessage })
-    );
-    console.log('나:', message);
-    messageIndex++;
-  } else if (messageIndex >= messages.length) {
-    console.log('모든 메시지를 전송했습니다.');
-  }
+function promptUser(): void {
+  rl.question('메시지 입력 (종료하려면 "quit" 입력): ', (input) => {
+    if (input.toLowerCase() === 'quit') {
+      console.log('채팅을 종료합니다.');
+      ws.close();
+      rl.close();
+    } else if (isKeyExchangeComplete()) {
+      const encryptedMessage = encryptMessage(input);
+      ws.send(
+        JSON.stringify({ type: 'encryptedMessage', content: encryptedMessage })
+      );
+      console.log('나: ' + input);
+      promptUser();
+    } else {
+      console.log('키 교환이 완료되지 않았습니다. 잠시 후 다시 시도해주세요.');
+      promptUser();
+    }
+  });
 }
