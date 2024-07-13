@@ -91,6 +91,11 @@ ws.on('message', function incoming(data: WebSocket.Data): void {
       console.log('공개키를 보냈습니다.');
     } else if (message.startsWith('방 ID:')) {
       console.log(message);
+    } else if (message === '[end]') {
+      console.log('방 종료');
+      rl.close();
+      ws.close();
+      process.exit(0);
     } else {
       console.log('처리되지 않은 메시지:', message);
     }
