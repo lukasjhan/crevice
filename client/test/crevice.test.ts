@@ -1,4 +1,4 @@
-import { CreviceClient } from './crevice.client';
+import { CreviceClient } from '../src/crevice.client';
 import readline from 'readline';
 
 const baseUrl: string = 'ws://localhost:5000';

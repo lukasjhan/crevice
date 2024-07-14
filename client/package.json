@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "tsx crevice.test.ts"
+    "test": "tsx test/crevice.test.ts",
+    "build": "tsc --build"
   },
   "keywords": [],
   "author": "",
