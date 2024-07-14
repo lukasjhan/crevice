@@ -1,7 +1,7 @@
 import { CreviceClient } from '../src/crevice.client';
 import readline from 'readline';
 
-const baseUrl: string = 'ws://localhost:5000';
+const baseUrl: string = 'ws://localhost:5001';
 const roomId: string | undefined = process.argv[2];
 
 const onRoomCreated = (roomId: string) => {

@@ -1,0 +1,19 @@
+{
+  "name": "crevice-multiple-server",
+  "module": "index.ts",
+  "type": "module",
+  "version": "0.1.0",
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "@types/bun": "latest",
+    "@types/uuid": "^10.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "ioredis": "^5.4.1",
+    "uuid": "^10.0.0"
+  }
+}
