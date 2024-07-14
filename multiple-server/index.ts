@@ -20,6 +20,7 @@ async function setupRabbitMQ() {
   rabbitmqChannel.consume(SERVER_ID, (msg) => {
     if (msg !== null) {
       const { roomId, message } = JSON.parse(msg.content.toString());
+      console.debug(`room ${roomId} message: ${message}`);
       const clientsInRoom = rooms.get(roomId);
       if (clientsInRoom) {
         for (const client of clientsInRoom) {
@@ -123,6 +124,25 @@ const server = serve({
     async close(ws) {
       const roomId = clients.get(ws);
       console.debug(`client disconnected from room ${roomId}`);
+
+      const serverRoomIds = await getServerIdsForRoom(roomId);
+      if (serverRoomIds.length !== 0) {
+        console.debug(`sending end message to other servers`);
+        // If the room is not empty, send a message to all other servers
+        for (const serverId of serverRoomIds) {
+          if (serverId !== SERVER_ID) {
+            rabbitmqChannel.sendToQueue(
+              serverId,
+              Buffer.from(
+                JSON.stringify({
+                  roomId: roomId,
+                  message: JSON.stringify({ type: 'system', message: 'end' }),
+                })
+              )
+            );
+          }
+        }
+      }
 
       await removeServerFromRoom(roomId);
 
